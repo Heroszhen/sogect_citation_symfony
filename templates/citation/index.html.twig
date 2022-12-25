@@ -1,0 +1,101 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<style>
+   .wrap{
+        position:relative;
+   }
+   section#header{
+        position:sticky;
+        top:0;
+        width:100%;
+        padding:5px 10px;
+        background-color:rgba(237, 237, 237,.5);
+   }
+</style>
+
+<div id="citations" class="citation-theme">
+    <section class="leftpart">
+        {% include 'leftmenu.html.twig' %}
+    </section>
+    <section class="mediumpart">
+        <div class="wrap">
+            <section id="header" class="d-flex justify-content-between pt-2">
+                <div class="h4">Accueil</div>
+                {% if app.user is not null %}
+                    <div>
+                        <a href="{{ path('app_citation',{'id':0}) }}" class="btn btn-outline-primary btn-sm">Poster</a>
+                    </div>
+                {% endif %}
+            </section>
+            <section class="list-citations">
+                {% for key, item in citations %}
+                    <a class="onecitation" href="{{ path('app_view_citation',{'id':item.id}) }}">
+                        <div class="author-time">
+                            <span class="author">{{ item.user.name }}</span>
+                            <span class="time">{{ item.created|date("d/m/Y h:i:s") }}</span>
+                        </div>
+                        <div class="message">{{ item.message|raw }}</div>
+                        {% if item.photo != "" %}
+                            <div class="photo">
+                                <img src="{{ item.photo }}" alt="">
+                            </div>
+                        {% endif %}
+                        <div class="footer">
+                            <div class="responses">
+                                <i class="bi bi-chat"></i> {{ item.comments|length }}
+                            </div>
+                            <div class="wrap-actions" data-id="{{ item.id }}">
+                                {% if is_granted("CITATION_EDIT",item) %}
+                                <div class="action edit me-3"><i class="bi bi-pencil"></i></div>
+                                {% endif %}
+                                {% if is_granted("CITATION_DELETE",item) %}
+                                <div class="action delete" ><i class="bi bi-trash3-fill"></i></div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </section>
+            <div class="navigation mt-3 ms-2">
+                {{ knp_pagination_render(citations) }}
+            </div>
+        </div>
+    </section>
+    <section class="rightpart">
+        {% include 'rightmenu.html.twig' %}
+    </section>
+</div>
+
+<script>
+    document.querySelectorAll(".wrap-actions").forEach(dom=>{
+        dom.addEventListener('click',(e)=>{
+            e.preventDefault();
+        })
+    })
+
+    document.querySelectorAll(".action.delete").forEach(dom=>{
+        dom.addEventListener('click',async (e)=>{
+            if(window.confirm("Voulez-vous supprimer cet article ?")){
+                let id = dom.parentElement.getAttribute("data-id");
+                try {
+                    let response = await fetch("/deletecitation/" + id, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        method: 'get'
+                    });
+                    response = await response.json();
+                    if(response["status"] == 1)dom.parentElement.parentElement.parentElement.remove();
+                } catch (err) {throw new Error(err);}
+            }
+        })
+    })
+
+    let route = "{{ route }}";
+    document.querySelectorAll(".action.edit").forEach(dom=>{
+        dom.addEventListener('click',async (e)=>{
+            let id = dom.parentElement.getAttribute("data-id");
+            window.location.href = `/${route}/${id}`;
+        })
+    })
+</script>
+{% endblock %}

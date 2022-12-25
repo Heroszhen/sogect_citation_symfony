@@ -1,0 +1,11 @@
+<div class="d-grid gap-2 mb-3">
+    <a href="{{ path('app_citations') }}" class="btn btn-outline-dark">Citations</a>
+</div>
+<div class="d-grid gap-2">
+    {% if app.user is not null %}
+        <a href="{{ path('security_logout') }}" class="btn btn-outline-danger">Se déconnecter</a>
+    {% else %}
+        <a href="{{ path('security_login') }}" class="btn btn-outline-success mb-2">Se connecter</a>
+        <a href="{{ path('security_logup') }}" class="btn btn-outline-primary">S'inscrir</a>
+    {% endif %}
+</div>

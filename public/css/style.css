@@ -1,0 +1,89 @@
+img {
+    width: 100%;
+    height: auto;
+}
+
+.citation-theme {
+    width: 100%;
+    padding-left: 270px;
+    padding-right: 270px;
+}
+
+.citation-theme>.leftpart,
+.citation-theme>.rightpart {
+    width: 200px;
+    min-height: 100vh;
+    position: fixed;
+    top: 0;
+    padding: 10px;
+}
+
+.citation-theme>.leftpart {
+    left: 270px;
+}
+
+.citation-theme>.rightpart {
+    right: 270px;
+}
+
+.citation-theme>.mediumpart {
+    width: calc(100% - 400px);
+    margin-left: 200px;
+    min-height: 100vh;
+    border: 1px solid rgb(239, 243, 244);
+    border-top: none;
+    border-bottom: none;
+}
+
+.citation-theme .onecitation {
+    display: block;
+    width: 100%;
+    color: black;
+    text-decoration: none;
+    padding: 12px;
+    border-bottom: 1px solid rgb(239, 243, 244);
+}
+
+.citation-theme .onecitation .author {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.citation-theme .onecitation .time {
+    color: gray;
+}
+
+.citation-theme .onecitation .photo {
+    padding: 0 20px;
+}
+
+.citation-theme .onecitation .message img {
+    width: 100% !important;
+    height: auto !important;
+}
+
+.citation-theme .onecitation .footer {
+    margin-top: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.citation-theme .onecitation .wrap-actions {
+    display: flex;
+}
+
+@media (max-width:1100px) {
+    .citation-theme {
+        padding: 0 10px;
+    }
+
+    .citation-theme>.leftpart,
+    .citation-theme>.rightpart {
+        display: none;
+    }
+
+    .citation-theme>.mediumpart {
+        width: 100%;
+        margin-left: 0;
+    }
+}

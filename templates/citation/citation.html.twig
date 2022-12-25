@@ -1,0 +1,57 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<style>
+   .wrap{
+        position:relative;
+   }
+   section#header{
+        position:sticky;
+        top:0;
+        width:100%;
+        padding:5px 10px;
+        background-color:rgba(237, 237, 237,.5);
+   }
+</style>
+
+<div id="citation" class="citation-theme">
+    <section class="leftpart">
+        {% include 'leftmenu.html.twig' %}
+    </section>
+    <section class="mediumpart">
+        <div class="wrap">
+            <section id="header" class="d-flex justify-content-between pt-2">
+                <div class="h4">Accueil</div>
+                {% if app.user is not null %}
+                    <div>
+                        <a href="{{ path('app_citation',{'id':0}) }}" class="btn btn-outline-primary btn-sm">Poster</a>
+                    </div>
+                {% endif %}
+            </section>
+            <section class="p-3">
+                <h3 class="text-center mb-4">
+                {% if action == 1 %}Modifier {% else %}Ajouter {% endif %}
+                un post
+                </h3>
+                {% for message in app.flashes('success') %}
+                    <div class="alert alert-success mt-2 mb-2">{{ message }}</div>
+                {% endfor %}
+                {{ form_start(form) }}
+                    <div class="mb-3">
+                        {{ form_row(form.message) }}
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    </div>
+                {{ form_end(form) }}
+            </section>
+        </div>
+    </section>
+    <section class="rightpart">
+        {% include 'rightmenu.html.twig' %}
+    </section>
+</div>
+
+<script>
+</script>
+{% endblock %}

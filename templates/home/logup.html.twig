@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Citation - Inscription{% endblock %}
+
+{% block body %}
+<style>
+    #logup{
+        width:100%;
+        height:100vh;
+        display:flex;
+        justify-content:center;
+        align-items:center;
+    }
+    .wrap{
+        width:30%;
+        padding:20px;
+        border:1px solid black;
+        border-radius:10px;
+    }
+    .form-group{
+        margin-bottom:20px;
+    }
+    .form-group .badge-danger{
+        color: red;
+    }
+</style>
+
+<div id="logup">
+    <div class="wrap">
+        <h2 class="text-center">Inscrivez-vous</h2>
+        {{ form_start(form) }}
+            {{ form_row(form.email,{'attr':{'class':'field-email'}}) }}
+            {{ form_row(form.password,{'attr':{'class':'field-password'}}) }}
+            {{ form_row(form.name,{'attr':{'class':'field-name'}}) }}
+            <div class="row justify-content-between mt-3">
+                <div class="col-6">
+                    <button type="submit" class="btn btn-primary">Inscription</button>
+                </div>
+                <div class="col-6 text-end">
+                    <a class="btn btn-dark" href="{{ path('security_login') }}">Connexion</a>
+                </div>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+php bin/console doctrine:schema:update --force
+
+---énoncé
+https://github.com/Kimouss/Sogec-Test-Citation
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/e090wgHj8FI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+https://marvel-b1-cdn.bc0a.com/f00000000163918/www.care.org/wp-content/uploads/2021/04/alexandra-daddario-bio.jpg
+
