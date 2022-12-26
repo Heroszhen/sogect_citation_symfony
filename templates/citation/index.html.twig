@@ -36,11 +36,11 @@
                             <span class="time">{{ item.created|date("d/m/Y h:i:s") }}</span>
                         </div>
                         <div class="message">{{ item.message|raw }}</div>
-                        {% if item.photo != "" %}
+                        {# {% if item.photo != "" %}
                             <div class="photo">
                                 <img src="{{ item.photo }}" alt="">
                             </div>
-                        {% endif %}
+                        {% endif %} #}
                         <div class="footer">
                             <div class="responses">
                                 <i class="bi bi-chat"></i> {{ item.comments|length }}

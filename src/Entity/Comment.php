@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\CommentRepository;
 use Doctrine\ORM\Mapping as ORM;
+use App\Validator\CheckComment;
 
 /**
  * @ORM\Entity(repositoryClass=CommentRepository::class)
@@ -23,6 +24,7 @@ class Comment
     private $user;
 
     /**
+     * @CheckComment
      * @ORM\Column(type="string", length=255)
      */
     private $message = "";

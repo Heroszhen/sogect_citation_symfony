@@ -2,16 +2,25 @@
 
 {% block body %}
 <style>
-   .wrap{
+    .wrap{
         position:relative;
-   }
-   section#header{
+    }
+    section#header{
         position:sticky;
         top:0;
         width:100%;
         padding:5px 10px;
         background-color:rgba(237, 237, 237,.5);
-   }
+    }
+    #editor1{
+        border:none;
+        width:100%;
+        outline:none;
+    }
+    #editor1:focus{
+        border:none;
+        outline:none;
+    }
 </style>
 
 <div id="citations" class="citation-theme">
@@ -31,21 +40,49 @@
             <section>
                 <article class="onecitation" >
                     <div class="author-time">
-                        <span class="author">{{ item.user.name }}</span>
-                        <span class="time">{{ item.created|date("d/m/Y h:i:s") }}</span>
+                        <span class="author">{{ citation.user.name }}</span>
+                        <span class="time">{{ citation.created|date("d/m/Y h:i:s") }}</span>
                     </div>
-                    <div class="message">{{ item.message|raw }}</div>
-                    {% if item.photo != "" %}
+                    <div class="message">{{ citation.message|raw }}</div>
+                    {% if citation.photo != "" %}
                         <div class="photo">
-                            <img src="{{ item.photo }}" alt="">
+                            <img src="{{ citation.photo }}" alt="">
                         </div>
                     {% endif %}
                     <div class="footer">
                         <div class="responses">
-                            {{ item.comments|length }} commentaires
+                            {{ citation.comments|length }} commentaires
                         </div>
                     </div>
                 </article>
+            </section>
+            <section x-data="editorcomment">
+                <article class="onecomment">
+                    <textarea x-model="commentM['message']" row="2" id="editor1" placeholder="message...">
+                    </textarea>
+                    <button id="button" class="btn btn-primary btn-sm mt-2" :disabled="commentM.message==''" @click="editComment()">Envoyer</button>
+                </article>
+            </section>
+            <section id="list-comments">
+                {% for key,item in citation.comments|reverse %}
+                    {# <article class="onecitation onecomment">
+                        <div class="author-time">
+                            <span class="author">{{ item.user.name }}</span>
+                            <span class="time">{{ item.created|date("d/m/Y h:i:s") }}</span>
+                        </div>
+                        <div class="message">{{ item.message|raw }}</div>
+                        <div class="footer">
+                            <div class="responses"></div>
+                            <div class="wrap-actions" data-id="{{ item.id }}">
+                                {% if app.user is not null and app.user.id == item.user.id %}
+                                    <div class="action edit me-3" onclick="editComment(event, {{ item.id }})"><i class="bi bi-pencil"></i></div>
+                                    <div class="action delete" onclick="deleteComment(event, {{ item.id }})"><i class="bi bi-trash3-fill"></i></div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </article> #}
+                    {% include 'citation/editcomment.html.twig' with {'comment': item} %}
+                {% endfor %}
             </section>
         </div>
     </section>
@@ -54,7 +91,134 @@
     </section>
 </div>
 
+<template id="modifycomment">
+  <section>
+    <textarea class="fullwidth"></textarea>
+    <div class="row">
+        <div class="col-6">
+            <button type="button" class="btn btn-primary btn-sm" onclick="saveComment()">Modifier</button>
+        </div>
+        <div class="col-6 text-end">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeEditor2()">Annuler</button>
+        </div>
+    </div>
+  </section>
+</template>
+
 <script>
-    
+    let editor2 = null;
+    let onecomment = null;
+    function clone(data){
+        return JSON.parse(JSON.stringify(data));
+    }
+    function editComment(e,id){
+        removeEditor2();
+
+        onecomment = e.target.parentElement;
+        for(let i = 0;i < 3;i++)onecomment = onecomment.parentElement;
+
+        if ("content" in document.createElement("template")) {
+            let template = document.querySelector("#modifycomment");
+            let clone = document.importNode(template.content, true);
+            editor2 = clone.querySelector("section");
+            let section_message = onecomment.querySelector(".message");
+            let value = section_message.textContent.trim();
+            editor2.querySelector("textarea").value = value;
+            section_message.classList.add("d-none");
+            onecomment.insertBefore(editor2, section_message); 
+            
+        }
+    }
+
+    function removeEditor2(){
+        if(editor2 != null){
+            editor2.remove();
+            editor2 = null;
+        }
+        if(onecomment != null){
+            onecomment.querySelector(".message").classList.remove("d-none");
+            onecomment = null;
+        }
+    }
+
+    async function saveComment(){//modify one comment
+        let ob = {
+            id:parseInt(onecomment.getAttribute("data-id")),
+            message: editor2.querySelector("textarea").value
+        }
+        try {
+            let response = await fetch("/editcomment", {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                method: 'post',
+                body:JSON.stringify(ob)
+            });
+            response = await response.text();
+            if(response.includes("error")){
+                let error = JSON.parse(response);
+                alert(error["error"])
+            }else{
+                let parser = new DOMParser();
+                let doc = parser.parseFromString(response, "text/html");
+                document.querySelector("#list-comments").replaceChild(doc.querySelector("article"),onecomment);
+                removeEditor2();
+            }
+        } catch (err) {throw new Error(err);}
+    }
+
+    async function deleteComment(e,id){
+        //console.log(e,id)
+        try {
+            let response = await fetch("/deletecomment/" + id, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                method: 'delete'
+            });
+            response = await response.json();
+            if(response["status"] == 1){
+                e.target.parentElement.parentElement.parentElement.parentElement.remove();
+            }
+        } catch (err) {throw new Error(err);}
+    }
+
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('editorcomment', () => ({
+            citationid:null,
+            commentM:{
+                id:null,
+                message:"",
+                citationid:null
+            },
+            init(){
+                this.citationid = {{ citation.id }};
+                this.regetModel();
+            },
+            regetModel(){
+                this.commentM =  {
+                    id:null,
+                    message:"",
+                    citationid:this.citationid
+                }
+            },
+            async editComment(){
+                try {
+                    let response = await fetch("/editcomment", {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        method: 'post',
+                        body:JSON.stringify(this.commentM)
+                    });
+                    response = await response.text();
+                    if(response.includes("error")){
+                        let error = JSON.parse(response);
+                        alert(error["error"])
+                    }else{
+                        let parser = new DOMParser();
+                        let doc = parser.parseFromString(response, "text/html");
+                        document.querySelector("#list-comments").prepend(doc.querySelector("article"));
+                        this.regetModel();
+                    }
+                } catch (err) {throw new Error(err);}
+            }
+        }))
+    })
 </script>
+
 {% endblock %}

@@ -3,6 +3,10 @@ img {
     height: auto;
 }
 
+.fullwidth {
+    width: 100%;
+}
+
 .citation-theme {
     width: 100%;
     padding-left: 270px;
@@ -35,7 +39,8 @@ img {
     border-bottom: none;
 }
 
-.citation-theme .onecitation {
+.citation-theme .onecitation,
+.citation-theme .onecomment {
     display: block;
     width: 100%;
     color: black;

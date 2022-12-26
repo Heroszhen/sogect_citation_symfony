@@ -10,6 +10,9 @@ use Symfony\Component\HttpFoundation\Request;
 use Knp\Component\Pager\PaginatorInterface;
 use App\Entity\Citation;
 use App\Form\CitationType;
+use App\Entity\Comment;
+use App\Validator\CheckComment;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class CitationController extends AbstractController
 {
@@ -37,9 +40,9 @@ class CitationController extends AbstractController
     public function getOneCitation(Citation $citation = null, Request $request, PaginatorInterface $paginator): Response
     {
         $em = $this->getDoctrine()->getManager();
-        
+
         return $this->render('citation/viewcitation.html.twig', [
-            "item" => $citation
+            "citation" => $citation
         ]);
     }
 
@@ -94,10 +97,67 @@ class CitationController extends AbstractController
         ];
         if ($request->isXmlHttpRequest()) {
             //$this->denyAccessUnlessGranted('CITATION_EDIT', $citation);
-            if($this->isGranted('CITATION_EDIT', $citation)){
+            if($this->isGranted('CITATION_DELETE', $citation)){
                 $response["status"] = 1;
                 $em = $this->getDoctrine()->getManager();
                 $em->remove($citation);
+                $em->flush();
+            }
+        }
+        return $this->json($response);
+    }
+
+    /**
+     * @Route("/editcomment", methods="POST")
+     */
+    public function editComment(Request $request, ValidatorInterface $validator, CheckComment $constraint){
+        if ($request->isXmlHttpRequest()) {
+            $data = json_decode($request->getContent(),true);
+            $em = $this->getDoctrine()->getManager();
+            if($data["id"] == null){
+                $comment = new Comment;
+                $citation = $em->find(Citation::class,$data["citationid"]);
+                $comment
+                    ->setUser($this->getUser())
+                    ->setCitation($citation)
+                    ->setCreated(new \DateTime());
+            }else{
+                $comment = $em->find(Comment::class,$data["id"]);
+                if(!$this->isGranted('COMMENT_EDIT', $comment)){
+                    return $this->json(["error" => "Vous n'avez pas le droit à la modification"]);
+                }
+            }
+            $comment->setMessage($data["message"]);
+
+            $errors = $validator->validate(
+                $comment->getMessage(),
+                $constraint 
+            );
+            if($errors->count() > 0){
+                return $this->json(["error"=>$errors->get(0)->getMessage()]);
+            }
+            
+            $em->persist($comment);
+            $em->flush();
+        }
+        return $this->render('citation/editcomment.html.twig', [
+            "comment" => $comment
+        ]);
+    }
+
+    /**
+     * @Route("/deletecomment/{id}", methods="DELETE")
+     */
+    public function deleteComment(Comment $comment, Request $request){
+        $response = [
+            "status" => 0,
+            "data" => null
+        ];
+        if ($request->isXmlHttpRequest()) {
+            if($this->isGranted('COMMENT_DELETE', $comment)){
+                $response["status"] = 1;
+                $em = $this->getDoctrine()->getManager();
+                $em->remove($comment);
                 $em->flush();
             }
         }
